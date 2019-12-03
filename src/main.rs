@@ -44,21 +44,36 @@ fn build_graph(n: usize, arr: Vec<String>) -> (HashMap<String, usize>, Vec<Vec<f
     return (currency_map, graph);
 }
 
-// graph traversal
-fn arbitrage(graph: Vec<Vec<f64>>, start_currency: usize) -> (Vec<usize>) {
-    let mut distance = vec![f64::MAX; graph.len()];
-    distance[start_currency] = 0.0;
+// graph traversal to check if negative cycle exists and finds the cycle
+fn neg_cycles(graph: Vec<Vec<f64>>, start: usize) -> (Vec<usize>) {
+    let mut dist = vec![f64::MAX; graph.len()];
+    dist[start] = 0.0;
 
-    for i in 0..graph.len() {
-        for j in 0..graph[i].len() {
-            
+    for _ in 0..graph.len()-1 {
+        for m in 0..graph.len() {
+            for n in 0..graph.len() {
+                dist[n] = dist[n].min(dist[m] + graph[m][n]);
+            }
         }
     }
+    println!("V-1 times: {:?}", dist);
+
+    let mut dist2 = dist.clone();
+    for m in 0..graph.len() {
+        for n in 0..graph.len() {
+            dist2[n] = dist2[n].min(dist2[m] + graph[m][n]);
+        }
+    }
+    println!("V times: {:?}", dist2);
+
+    for i in 0..dist.len() {
+        if dist[i] != dist2[i] {
+            println!("Negative cycle detected.");
+            break;
+        }
+    }
+
     return vec![];
-}
-
-fn check_cycles() {
-
 }
 
 fn main() {
@@ -86,7 +101,7 @@ fn main() {
             ln_graph[i][j] = -f64::ln(graph[i][j]);
         }
     }
-
-    let start = 0;
-    let order = arbitrage(ln_graph, start);
+    // println!("{:?}", ln_graph);
+    let start: usize = 0;
+    let order = neg_cycles(ln_graph, start);
 }
